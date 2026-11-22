@@ -1,0 +1,55 @@
+name: Build AutoKaraoke Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "packaging/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "README.md"
+      - "LICENSE"
+      - ".github/workflows/build-windows.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build Windows x64 package
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Build Windows package
+        run: uv run --no-sync python packaging/build.py windows
+
+      - name: Verify package
+        shell: bash
+        run: |
+          test -n "$(find dist -maxdepth 1 -type f -name 'AutoKaraoke-*-windows-x64.zip' -print -quit)"
+          unzip -l dist/AutoKaraoke-*-windows-x64.zip | grep -E 'AutoKaraoke.bat|bin/uv.exe|bin/ffmpeg.exe|app/pyproject.toml'
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoKaraoke-Windows-x64
+          path: dist/AutoKaraoke-*-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 30
