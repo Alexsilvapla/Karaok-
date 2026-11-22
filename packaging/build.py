@@ -83,8 +83,10 @@ def extract_members(archive: Path, wanted: dict[str, Path]) -> None:
 def stage_app(dest: Path) -> str:
     """Copy the project (source, lock file) with downloads disabled; return the lock hash."""
     dest.mkdir(parents=True)
-    for name in ("pyproject.toml", "uv.lock", ".python-version", "README.md", "LICENSE"):
-        shutil.copy2(ROOT / name, dest / name)
+    for name in ("pyproject.toml", "uv.lock", "README.md", "LICENSE", ".python-version"):
+        source = ROOT / name
+        if source.is_file():
+            shutil.copy2(source, dest / name)
     shutil.copytree(ROOT / "src", dest / "src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     config = dest / "src" / "autokaraoke" / "config.py"
     text = config.read_text()
