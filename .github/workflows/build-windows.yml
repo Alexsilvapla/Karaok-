@@ -53,3 +53,5 @@ jobs:
           path: dist/AutoKaraoke-*-windows-x64.zip
           if-no-files-found: error
           retention-days: 30
+
+# Rebuild after packaging script compatibility fix.
